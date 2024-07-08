@@ -1,6 +1,6 @@
-# WebSim Reminders
+# My Reminder
 
-WebSim Reminders is a web application that allows users to set and manage reminders. It provides a simple interface for creating, editing, and deleting reminders, with email notifications sent on the specified date.
+My Reminder is a web application that allows users to set and manage reminders. It provides a simple interface for creating, editing, and deleting reminders, with email notifications sent on the specified date.
 
 ## Features
 
