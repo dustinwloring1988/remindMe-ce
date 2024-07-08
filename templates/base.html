@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Remind Me{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="{{ url_for('index') }}" class="text-white text-2xl font-bold">Remind Me</a>
+            <ul class="flex space-x-4">
+                <li><a href="{{ url_for('index') }}" class="text-white hover:text-blue-200">Home</a></li>
+                <li><a href="{{ url_for('reminder') }}" class="text-white hover:text-blue-200">New Reminder</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container mx-auto mt-6">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="bg-gray-200 mt-8 py-4">
+        <div class="container mx-auto text-center text-gray-600">
+            &copy; 2024 Remind Me. All rights reserved.
+        </div>
+    </footer>
+
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>

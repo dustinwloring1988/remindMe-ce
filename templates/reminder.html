@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6">Set Reminder</h1>
+    <form id="reminderForm" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="date">
+                Date
+            </label>
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="date" type="date" required>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2" for="message">
+                Message
+            </label>
+            <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="message" rows="3" required></textarea>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">
+                Email Addresses
+            </label>
+            <div id="emailList">
+                <div class="flex mb-2">
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="email" required>
+                    <button type="button" class="bg-red-500 text-white px-4 py-2 rounded ml-2" onclick="removeEmail(this)">Remove</button>
+                </div>
+            </div>
+            <button type="button" class="bg-green-500 text-white px-4 py-2 rounded mt-2" onclick="addEmail()">Add Email</button>
+        </div>
+        <div class="flex items-center justify-between">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                Save Reminder
+            </button>
+            <a href="{{ url_for('index') }}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    function addEmail() {
+        const emailList = document.getElementById('emailList');
+        const newEmailDiv = document.createElement('div');
+        newEmailDiv.className = 'flex mb-2';
+        newEmailDiv.innerHTML = `
+            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="email" required>
+            <button type="button" class="bg-red-500 text-white px-4 py-2 rounded ml-2" onclick="removeEmail(this)">Remove</button>
+        `;
+        emailList.appendChild(newEmailDiv);
+    }
+
+    function removeEmail(button) {
+        const emailDiv = button.parentElement;
+        if (document.querySelectorAll('#emailList > div').length > 1) {
+            emailDiv.remove();
+        } else {
+            alert('At least one email address is required.');
+        }
+    }
+
+    const reminderId = '{{ reminder_id }}';
+    let isEditing = false;
+
+    document.getElementById('reminderForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const date = document.getElementById('date').value;
+        const message = document.getElementById('message').value;
+        const emails = Array.from(document.querySelectorAll('#emailList input[type="email"]')).map(input => input.value);
+
+        const reminderData = {
+            date: date,
+            message: message,
+            emails: emails
+        };
+
+        try {
+            let url = '/api/set-reminder';
+            let method = 'POST';
+
+            if (isEditing) {
+                url = `/api/reminders/${reminderId}`;
+                method = 'PUT';
+            }
+
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(reminderData),
+            });
+
+            if (response.ok) {
+                alert(isEditing ? 'Reminder updated successfully!' : 'Reminder set successfully!');
+                window.location.href = '{{ url_for("index") }}';
+            } else {
+                alert(isEditing ? 'Failed to update reminder. Please try again.' : 'Failed to set reminder. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        }
+    });
+
+    if (reminderId) {
+        isEditing = true;
+        fetchReminderData(reminderId);
+    }
+
+    async function fetchReminderData(id) {
+        const response = await fetch(`/api/reminders/${id}`);
+        const reminder = await response.json();
+
+        document.getElementById('date').value = reminder.date;
+        document.getElementById('message').value = reminder.message;
+
+        const emailList = document.getElementById('emailList');
+        emailList.innerHTML = '';
+        reminder.emails.forEach(email => {
+            const emailDiv = document.createElement('div');
+            emailDiv.className = 'flex mb-2';
+            emailDiv.innerHTML = `
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="email" value="${email}" required>
+                <button type="button" class="bg-red-500 text-white px-4 py-2 rounded ml-2" onclick="removeEmail(this)">Remove</button>
+            `;
+            emailList.appendChild(emailDiv);
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6">My Reminders</h1>
+    <button id="newReminderBtn" class="bg-blue-500 text-white px-4 py-2 rounded mb-4">New Reminder</button>
+    <table class="w-full bg-white shadow-md rounded">
+        <thead>
+            <tr class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                <th class="py-3 px-6 text-left">Date</th>
+                <th class="py-3 px-6 text-left">Message</th>
+                <th class="py-3 px-6 text-left">Emails</th>
+            </tr>
+        </thead>
+        <tbody id="reminderTableBody">
+            <!-- Reminder rows will be dynamically inserted here -->
+        </tbody>
+    </table>
+    <div class="mt-4 flex justify-between">
+        <button id="prevPageBtn" class="bg-gray-300 text-gray-700 px-4 py-2 rounded">Previous</button>
+        <span id="pageInfo" class="py-2">Page 1 of 1</span>
+        <button id="nextPageBtn" class="bg-gray-300 text-gray-700 px-4 py-2 rounded">Next</button>
+    </div>
+</div>
+
+<script>
+    let currentPage = 1;
+    const itemsPerPage = 10;
+
+    async function fetchReminders() {
+        const response = await fetch(`/api/reminders?page=${currentPage}&limit=${itemsPerPage}`);
+        const data = await response.json();
+        return data;
+    }
+
+    function renderReminders(reminders) {
+        const tableBody = document.getElementById('reminderTableBody');
+        tableBody.innerHTML = '';
+        reminders.forEach(reminder => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="py-3 px-6">${reminder.date}</td>
+                <td class="py-3 px-6">${reminder.message}</td>
+                <td class="py-3 px-6">${reminder.emails.join(', ')}</td>
+            `;
+            row.addEventListener('dblclick', () => editReminder(reminder.id));
+            tableBody.appendChild(row);
+        });
+    }
+
+    async function loadReminders() {
+        const reminders = await fetchReminders();
+        renderReminders(reminders);
+        updatePagination();
+    }
+
+    function updatePagination() {
+        document.getElementById('pageInfo').textContent = `Page ${currentPage}`;
+        // Update button states based on current page and total pages
+    }
+
+    function editReminder(id) {
+        window.location.href = `/reminder/${id}`;
+    }
+
+    document.getElementById('newReminderBtn').addEventListener('click', () => {
+        window.location.href = '/reminder';
+    });
+
+    document.getElementById('prevPageBtn').addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            loadReminders();
+        }
+    });
+
+    document.getElementById('nextPageBtn').addEventListener('click', () => {
+        currentPage++;
+        loadReminders();
+    });
+
+    // Initial load
+    loadReminders();
+</script>
+{% endblock %}
